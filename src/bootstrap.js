@@ -214,7 +214,11 @@
       }
       await virtualclass.videoHost.afterSessionJoin();
     }
-
   }
+
+  Bootstrap.prototype.loadCacheAllData = function () {
+     virtualclass.storage.getDataFromTable('cacheAll');
+  }
+
   window.Bootstrap = Bootstrap;
 }(window));

@@ -427,7 +427,7 @@
       },
 
       makeReadySocket() {
-        if (!virtualclass.vutil.isPlayMode()) {
+        if (!virtualclass.vutil.isPlayMode() && virtualclass.config.makeWebSocketReady) {
           this.initSocketConn();
         }
       },
@@ -970,7 +970,7 @@
 
                 // Only need to  serve on after page refresh
                 const that = this;
-                await virtualclass.storage.getWbData(id);
+                // await virtualclass.storage.getWbData(id);
                 //                                console.log("==== SESSION CLEAR");
               } else {
                 alert('whiteboard container is null');

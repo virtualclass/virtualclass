@@ -578,7 +578,7 @@
       },
 
       async initWhiteboardData(wb) {
-        await virtualclass.storage.getWbData(wb);
+        // await virtualclass.storage.getWbData(wb);
         if (typeof virtualclass.gObj.tempReplayObjs[wb] === 'object' && virtualclass.gObj.tempReplayObjs[wb].length > 0) {
           console.log('Start whiteboard replay from local storage');
           virtualclass.wb[wb].utility.replayFromLocalStroage(virtualclass.gObj.tempReplayObjs[wb]);

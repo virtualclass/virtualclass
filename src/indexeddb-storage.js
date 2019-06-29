@@ -27,7 +27,7 @@
 
       that = this;
       this.tables = [
-        'wbData',
+        // 'wbData',
         'dataAdapterAll',
         'dataUserAdapterAll',
         'executedStoreAll',
@@ -56,9 +56,10 @@
 
     onupgradeneeded(db) {
       const thisDb = db;
-      if (!thisDb.objectStoreNames.contains('wbData')) {
-        thisDb.createObjectStore('wbData', { keyPath: 'did' });
-      }
+
+      // if (!thisDb.objectStoreNames.contains('wbData')) {
+      //   thisDb.createObjectStore('wbData', { keyPath: 'did' });
+      // }
 
       if (!thisDb.objectStoreNames.contains('dataAdapterAll')) {
         thisDb.createObjectStore('dataAdapterAll', { keyPath: 'serialKey' });
@@ -109,16 +110,15 @@
       await this.getAllObjs();
     },
 
-    store(data) {
-      // console.log("whiteboard data store");
-      const tx = that.db.transaction('wbData', 'readwrite');
-      tx.store.put({ repObjs: data, did: virtualclass.gObj.currWb, id: 1 });
-      tx.done.then(() => {
-        // console.log('success')
-      }, () => {
-        console.log('failure');
-      });
-    },
+    // store(data) {
+    //   const tx = that.db.transaction('wbData', 'readwrite');
+    //   tx.store.put({ repObjs: data, did: virtualclass.gObj.currWb, id: 1 });
+    //   tx.done.then(() => {
+    //      console.log('success')
+    //   }, () => {
+    //     console.log('failure');
+    //   });
+    // },
 
 
     pollStore(store) {
@@ -131,11 +131,11 @@
       });
     },
 
-    wbDataRemove(key) {
-      console.log('Whiteboard data remove');
-      const tx = that.db.transaction(['wbData'], 'readwrite');
-      tx.store.delete(key);
-    },
+    // wbDataRemove(key) {
+    //   console.log('Whiteboard data remove');
+    //   const tx = that.db.transaction(['wbData'], 'readwrite');
+    //   tx.store.delete(key);
+    // },
 
     async dataExecutedStoreAll(data, serialKey) {
       console.log("==== indexedb, dataExecutedAllStore,  data ", data);
@@ -172,13 +172,16 @@
     },
 
     storeCacheAll(data, serialKey) {
-      const tx = that.db.transaction('cacheAll', 'readwrite');
-      tx.store.put(data, serialKey);
-      tx.done.then(() => {
-        console.log('success')
-      }, () => {
-        console.log('failure');
-      });
+      if (virtualclass.config.makeWebSocketReady) {
+        const tx = that.db.transaction('cacheAll', 'readwrite');
+
+        tx.store.put(data, serialKey);
+        tx.done.then(() => {
+          console.log('success')
+        }, () => {
+          console.log('failure');
+        });
+      }
     },
 
 
@@ -251,14 +254,14 @@
 
     async getAllObjs() {
       await Promise.all([
-        this.getDataFromTable('wbData'),
+        // this.getDataFromTable('wbData'),
         this.getDataFromTable('dataAdapterAll'),
         this.getDataFromTable('dataUserAdapterAll'),
         this.getDataFromTable('executedStoreAll'),
         this.getDataFromTable('executedUserStoreAll'),
         this.getDataFromTable('dstdata'),
         this.getDataFromTable('dstall'),
-        //this.getDataFromTable('mustData'),
+        // this.getDataFromTable('cacheAll'),
       ]);
     },
 
@@ -284,27 +287,27 @@
       }
     },
 
-    wbData: {
-      async handleResult(cursor) {
-        while (cursor) {
-          if (cursor.value.hasOwnProperty('repObjs')) {
-            if (typeof virtualclass.wb === 'object') {
-              console.log(`Total Whiteboard Length ${JSON.parse(cursor.value.repObjs).length} From indexeddb`);
-              virtualclass.wb[virtualclass.gObj.currWb].utility.replayFromLocalStroage(JSON.parse(cursor.value.repObjs));
-            } else {
-              virtualclass.gObj.tempReplayObjs._doc_0_0 = JSON.parse(cursor.value.repObjs);
-            }
-            storeFirstObj = true;
-          }
-
-          cursor = await cursor.continue();
-        }
-
-        if (!storeFirstObj && virtualclass.currApp === 'Whiteboard') {
-          virtualclass.wb[virtualclass.gObj.currWb].utility.makeUserAvailable(); // at very first
-        }
-      },
-    },
+    // wbData: {
+    //   async handleResult(cursor) {
+    //     while (cursor) {
+    //       if (cursor.value.hasOwnProperty('repObjs')) {
+    //         if (typeof virtualclass.wb === 'object') {
+    //           console.log(`Total Whiteboard Length ${JSON.parse(cursor.value.repObjs).length} From indexeddb`);
+    //           virtualclass.wb[virtualclass.gObj.currWb].utility.replayFromLocalStroage(JSON.parse(cursor.value.repObjs));
+    //         } else {
+    //           virtualclass.gObj.tempReplayObjs._doc_0_0 = JSON.parse(cursor.value.repObjs);
+    //         }
+    //         storeFirstObj = true;
+    //       }
+    //
+    //       cursor = await cursor.continue();
+    //     }
+    //
+    //     if (!storeFirstObj && virtualclass.currApp === 'Whiteboard') {
+    //       virtualclass.wb[virtualclass.gObj.currWb].utility.makeUserAvailable(); // at very first
+    //     }
+    //   },
+    // },
 
 
     dataAdapterAll: {
@@ -324,14 +327,23 @@
     },
 
     cacheAll : {
-      async handleResult(cursor) {
-        while (cursor) {
-          if (cursor.value.hasOwnProperty('data')) {
-            console.log('data', cursor.value.data);
+        async handleResult(cursor) {
+        if (cursor) {
+          if (cursor.value) {
+            const msg = {};
+            msg.m = JSON.parse(cursor.value);
+            msg.type = 'broadcastToAll';
+            msg.user = {userid: cursor.key[0]};
+            // io.onRecJson(msg);
           }
           cursor = await cursor.continue();
+          this.handleResult(cursor);
+        } else {
+          virtualclass.config.makeWebSocketReady = true;
+          console.log('==== how many times');
+          virtualclass.makeReadySocket();
         }
-      }
+      },
     },
 
     cacheOut : {
@@ -499,7 +511,7 @@
       ioMissingPackets.aheadUserPackets = [];
       ioMissingPackets.missUserRequestFlag = 0;
       await Promise.all([
-        this.clearSingleTable('wbData'),
+        // this.clearSingleTable('wbData'),
         this.clearSingleTable('dataAdapterAll'),
         this.clearSingleTable('dataUserAdapterAll'),
         this.clearSingleTable('executedStoreAll'),
@@ -511,7 +523,6 @@
         this.clearSingleTable('cacheAll'),
         this.clearSingleTable('cacheIn'),
         this.clearSingleTable('cacheOut'),
-        //  this.clearSingleTable('mustData'),
       ]);
       if (virtualclass.gObj.hasOwnProperty('sessionEndResolve')) {
         virtualclass.gObj.sessionEndResolve();
@@ -546,19 +557,20 @@
 
     // get whiteboard data accoring to whieboard id
 
-    async getWbData(wbId) {
-      const tx = await this.db.transaction('wbData', 'readwrite');
-      const store = tx.objectStore('wbData');
-      const wb = await store.get(wbId);
+    // async getWbData(wbId) {
+    //   const tx = await this.db.transaction('wbData', 'readwrite');
+    //   const store = tx.objectStore('wbData');
+    //   const wb = await store.get(wbId);
+    //
+    //   if (typeof wb !== 'undefined') {
+    //     console.log(`Whiteboard start store from local storage ${wbId}`);
+    //     virtualclass.gObj.tempReplayObjs[wbId] = [];
+    //     virtualclass.gObj.tempReplayObjs[wbId] = JSON.parse(wb.repObjs);
+    //   } else {
+    //     virtualclass.gObj.tempReplayObjs[wbId] = 'nodata';
+    //   }
+    // },
 
-      if (typeof wb !== 'undefined') {
-        console.log(`Whiteboard start store from local storage ${wbId}`);
-        virtualclass.gObj.tempReplayObjs[wbId] = [];
-        virtualclass.gObj.tempReplayObjs[wbId] = JSON.parse(wb.repObjs);
-      } else {
-        virtualclass.gObj.tempReplayObjs[wbId] = 'nodata';
-      }
-    },
   };
   window.storage = storage;
 }(window));

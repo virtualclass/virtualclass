@@ -107,7 +107,7 @@
           if (typeof notSave === 'undefined') {
             console.log(`Delete:- Saving the delete command with id ${obj.uid}`);
             vcan.main.replayObjs.push(obj);
-            virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
+            //virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
           }
         } else {
           virtualclass.storage.store(JSON.stringify(virtualclass.wb[id].gObj.replayObjs));
@@ -943,7 +943,7 @@
       objPutInContainer(obj) {
         vcan.main.replayObjs.push(obj);
         // localStorage.repObjs = JSON.stringify(vcan.main.replayObjs);
-        virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
+       // virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
       },
 
       makeActiveTool(byReload) {
@@ -1058,10 +1058,10 @@
           }
         }
         // console.log('Whiteboard Stored ID ' + virtualclass.wb[wid].gObj.replayObjs[virtualclass.wb[wid].gObj.replayObjs.length-1].uid);
-        if (virtualclass.wb[wid].gObj.replayObjs.length > 0) {
-          // console.log('Whiteboard saving storage ' + repObjs[repObjs.length-1].uid);
-          virtualclass.storage.store(JSON.stringify(virtualclass.wb[wid].gObj.replayObjs));
-        }
+        // if (virtualclass.wb[wid].gObj.replayObjs.length > 0) {
+        //   // console.log('Whiteboard saving storage ' + repObjs[repObjs.length-1].uid);
+        //   virtualclass.storage.store(JSON.stringify(virtualclass.wb[wid].gObj.replayObjs));
+        // }
         //  virtualclass.storage.store(JSON.stringify(virtualclass.wb[wid].gObj.replayObjs));
         if (roles.hasControls()) {
           const fontTool = document.querySelector(`#t_font${wid}`);

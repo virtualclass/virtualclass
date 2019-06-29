@@ -336,7 +336,7 @@
             vcan.main.replayObjs.push(obj);
             // recorder.items.push(obj);
 
-            virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
+            // virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
 
 
             virtualclass.vutil.beforeSend({ repObj: [obj], cf: 'repObj' }); // after optimized
@@ -413,7 +413,7 @@
         virtualclass.wb[virtualclass.gObj.currWb].uid++;
         obj.uid = virtualclass.wb[virtualclass.gObj.currWb].uid;
         vcan.main.replayObjs.push(obj);
-        virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
+        //virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
         virtualclass.vutil.beforeSend({ repObj: [obj], cf: 'repObj' });
       },
 

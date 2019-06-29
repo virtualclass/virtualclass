@@ -6,6 +6,10 @@
 
 function Config () {};
 
+Config.prototype = {
+  makeWebSocketReady : false
+}
+
 Config.prototype.setNewSession = function (session) {
   localStorage.setItem('mySession', session);
   if (!virtualclass.isPlayMode && roles.hasControls()) {

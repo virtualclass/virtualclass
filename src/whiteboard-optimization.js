@@ -78,7 +78,7 @@
         obj.uid = virtualclass.wb[wId].uid;
         vcan.main.replayObjs.push(obj);
         virtualclass.vutil.beforeSend({ repObj: [obj], cf: 'repObj' });
-        virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
+       // virtualclass.storage.store(JSON.stringify(vcan.main.replayObjs));
       },
     };
     vcan.optimize = optimize;
