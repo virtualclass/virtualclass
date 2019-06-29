@@ -258,6 +258,7 @@ var io = {
   },
 
   onRecJsonIndividual(receivemsg) {
+    ioStorage.receiveStoreCacheAllData(receivemsg);
     let userto = '';
     switch (receivemsg.type) {
       case 'joinroom':

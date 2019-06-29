@@ -87,11 +87,11 @@ var ioMissingPackets = {
       }
     }
 
-    if (msg.m.missedpackets == 1) {
+    if (msg.m.missedpackets === 1) {
       this.fillExecutedStore(msg);
     } else if (typeof msg.m.serial !== 'undefined' && msg.m.serial != null) {
-      if (msg.m.serial == (this.executedSerial[uid] + 1)) {
-        // Everything is good and in order
+      if ((msg.m.serial === (this.executedSerial[uid] + 1)) || msg.m.serial === 0) {
+          // Everything is good and in order
         console.log(`UID ${uid} Object with Serial ${msg.m.serial}`);
         this.executedSerial[uid] = msg.m.serial;
         this.executedStore[uid][msg.m.serial] = msg;
@@ -124,10 +124,10 @@ var ioMissingPackets = {
     const uid = msg.user.userid;
     this.validateAllUserVariables(uid);
 
-    if (msg.m.missedpackets == 1) {
+    if (msg.m.missedpackets === 1) {
       this.fillExecutedStore(msg);
     } else if (typeof msg.m.userSerial !== 'undefined' && msg.m.userSerial != null) {
-      if (msg.m.userSerial == (this.executedUserSerial[uid] + 1)) {
+      if ((msg.m.userSerial === (this.executedUserSerial[uid] + 1)) || msg.m.userSerial === 0) {
         // Everything is good and in order
         console.log(`UID ${uid} Object with userSerial ${msg.m.userSerial}`);
         this.executedUserSerial[uid] = msg.m.userSerial;

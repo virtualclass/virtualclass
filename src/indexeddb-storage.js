@@ -12,7 +12,7 @@
 
   const storage = {
     //  totalStored: (totalDataStored == null) ? 0 : JSON.parse(totalDataStored),
-    version: 8,
+    version: 12,
     async init() {
       /** *
        * Which table, what doing
@@ -20,17 +20,29 @@
        dataAdapterAll => To store the must data of all user.
        dataUserAdapterAll =>  To Store the must data of all user on particular user
        wbData => To store the whiteboard data.
-       config => For store the date of created session of particular room,
        By which, we calculate the time(after 48 hour we are
        ending the session for that particular room)
        executedUserStoreAll => for store the missed packet of according to user.
        */
 
       that = this;
-      this.tables = ['wbData', 'dataAdapterAll', 'dataUserAdapterAll', 'executedStoreAll', 'executedUserStoreAll', 'dstdata', 'pollStorage', 'quizData', 'dstall'];
+      this.tables = [
+        'wbData',
+        'dataAdapterAll',
+        'dataUserAdapterAll',
+        'executedStoreAll',
+        'executedUserStoreAll',
+        'dstdata',
+        'pollStorage',
+        'quizData',
+        'dstall',
+        'cacheAll',
+        'cacheOut',
+        'cacheIn',
+      ];
 
       this.db = await virtualclass.virtualclassIDBOpen('vidya_apps', that.dbVersion, {
-        upgrade(db, oldVersion, newVersion, transaction) {
+        upgrade(db) {
           that.onupgradeneeded(db);
         },
       });
@@ -79,19 +91,23 @@
       if (!thisDb.objectStoreNames.contains('dstall')) {
         thisDb.createObjectStore('dstall', { keyPath: 'timeStamp', autoIncrement: true });
       }
+
+      if (!thisDb.objectStoreNames.contains('cacheAll')) {
+        thisDb.createObjectStore('cacheAll');
+      }
+
+      if (!thisDb.objectStoreNames.contains('cacheOut')) {
+        thisDb.createObjectStore('cacheOut');
+      }
+
+      if (!thisDb.objectStoreNames.contains('cacheIn')) {
+        thisDb.createObjectStore('cacheIn');
+      }
     },
 
     async onsuccess() {
-      const pos = this.tables.indexOf('wbData');
-      if (pos > -1) {
-        var tables = this.tables.slice(pos + 1);
-      } else {
-        var { tables } = this;
-      }
-
-      await this.getAllObjs(tables);
+      await this.getAllObjs();
     },
-
 
     store(data) {
       // console.log("whiteboard data store");
@@ -122,6 +138,7 @@
     },
 
     async dataExecutedStoreAll(data, serialKey) {
+      console.log("==== indexedb, dataExecutedAllStore,  data ", data);
       const tx = that.db.transaction('executedStoreAll', 'readwrite');
       tx.store.put({ executedData: data, id: 6, serialKey });
       tx.done.then(() => {
@@ -139,6 +156,7 @@
     },
 
     dataAdapterAllStore(data, serialKey) {
+      console.log("==== indexedb, dataAdapterAllStore,  data ", data);
       const tx = that.db.transaction('dataAdapterAll', 'readwrite');
       tx.store.put({ adaptData: data, id: 5, serialKey });
       tx.done.then(() => {
@@ -152,6 +170,38 @@
       //     e.preventDefault();
       // }
     },
+
+    storeCacheAll(data, serialKey) {
+      const tx = that.db.transaction('cacheAll', 'readwrite');
+      tx.store.put(data, serialKey);
+      tx.done.then(() => {
+        console.log('success')
+      }, () => {
+        console.log('failure');
+      });
+    },
+
+
+    storeCacheOut(data, serialKey) {
+      const tx = that.db.transaction('cacheOut', 'readwrite');
+      tx.store.put(data, serialKey);
+      tx.done.then(() => {
+        console.log('success');
+      }, () => {
+        console.log('failure');
+      });
+    },
+
+    storeCacheIn(data, serialKey) {
+      const tx = that.db.transaction('cacheIn', 'readwrite');
+      tx.store.put(data, serialKey);
+      tx.done.then(() => {
+        console.log('success');
+      }, () => {
+        console.log('failure');
+      });
+    },
+
 
     dataUserAdapterAllStore(data, serialKey) {
       const tx = that.db.transaction('dataUserAdapterAll', 'readwrite');
@@ -174,6 +224,7 @@
 
 
     dataExecutedUserStoreAll(data, serialKey) {
+      console.log("==== indexedb, dataExecutedUserStoreAll,  data ", data);
       const tx = that.db.transaction('executedUserStoreAll', 'readwrite');
       tx.store.put({ executedUserData: data, id: 8, serialKey });
       tx.done.then(() => {
@@ -207,6 +258,7 @@
         this.getDataFromTable('executedUserStoreAll'),
         this.getDataFromTable('dstdata'),
         this.getDataFromTable('dstall'),
+        //this.getDataFromTable('mustData'),
       ]);
     },
 
@@ -269,6 +321,26 @@
           cursor = await cursor.continue();
         }
       },
+    },
+
+    cacheAll : {
+      async handleResult(cursor) {
+        while (cursor) {
+          if (cursor.value.hasOwnProperty('data')) {
+            console.log('data', cursor.value.data);
+          }
+          cursor = await cursor.continue();
+        }
+      }
+    },
+
+    cacheOut : {
+      async handleResult(cursor) {
+        while (cursor) {
+          console.log("someting happend");
+          cursor = await cursor.continue();
+        }
+      }
     },
 
     dataUserAdapterAll: {
@@ -436,6 +508,10 @@
         this.clearSingleTable('pollStorage'),
         this.clearSingleTable('quizData'),
         this.clearSingleTable('dstall'),
+        this.clearSingleTable('cacheAll'),
+        this.clearSingleTable('cacheIn'),
+        this.clearSingleTable('cacheOut'),
+        //  this.clearSingleTable('mustData'),
       ]);
       if (virtualclass.gObj.hasOwnProperty('sessionEndResolve')) {
         virtualclass.gObj.sessionEndResolve();
