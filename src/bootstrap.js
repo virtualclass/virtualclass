@@ -217,8 +217,8 @@
   }
 
   Bootstrap.prototype.loadCacheAllData = function () {
-     virtualclass.storage.getDataFromTable('cacheAll');
-  }
+    virtualclass.storage.getDataFromcacheAll();
+  };
 
   window.Bootstrap = Bootstrap;
 }(window));

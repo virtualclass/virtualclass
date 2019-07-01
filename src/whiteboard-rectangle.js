@@ -43,10 +43,14 @@
         draw(ctx, obj, noTransform) {
           // TODO
           // this funciton should be done through the proper process
+
+
           const x = -obj.width / 2;
           const y = -obj.height / 2;
           const w = obj.width;
           const h = obj.height;
+
+
 
           ctx.beginPath();
 
@@ -83,6 +87,8 @@
             ctx.fillStyle = obj.fillColor;
             ctx.fill();
           }
+
+          console.log('====> whiteboard rectangle ', ioAdapter.serial)
         },
       };
     };

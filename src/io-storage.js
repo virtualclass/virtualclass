@@ -35,14 +35,25 @@ var ioStorage = {
     virtualclass.storage.dataExecutedStoreAll(JSON.stringify(DataExecutedAll), serialKeyWithUser);
   },
 
-  receiveStoreCacheAllData (data) {
-    if (typeof data.m === 'object') {
-      if (data.m.hasOwnProperty('serial')) {
-        this.storeCacheAllData(data.m, [data.user.userid, data.m.serial]);
-      } else if (data.m.hasOwnProperty('userSerial')){
-        this.storeCacheInData(data.m, [data.user.userid, data.m.userSerial]);
-      }
-    }
+  // receiveStoreCacheAllData (data) {
+  //   if (typeof data.m === 'object') {
+  //     if (data.m.hasOwnProperty('serial')) {
+  //       this.storeCacheAllData(JSON.stringify(data.m), [data.user.userid, data.m.serial]);
+  //     } else if (data.m.hasOwnProperty('userSerial')){
+  //       this.storeCacheInData(data.m, [data.user.userid, data.m.userSerial]);
+  //     }
+  //   }
+  // },
+  storeCacheAllDataSend(data, key) {
+    const msg = {
+      user: { userid: wbUser.id },
+      m: data.arg.msg,
+    };
+    msg.user.lname = virtualclass.gObj.allUserObj[virtualclass.gObj.uid].lname;
+    msg.user.name = virtualclass.gObj.allUserObj[virtualclass.gObj.uid].name;
+    msg.user.role = virtualclass.gObj.allUserObj[virtualclass.gObj.uid].role;
+    msg.type = 'broadcastToAll';
+    virtualclass.storage.storeCacheAll(JSON.stringify(msg), key);
   },
 
   storeCacheAllData(data, key) {
@@ -50,7 +61,7 @@ var ioStorage = {
   },
 
   storeCacheOutData(data, key) {
-    virtualclass.storage.storeCacheOut(JSON.stringify(data), key);
+    virtualclass.storage.storeCacheOut(data, key);
   },
 
   storeCacheInData(data, key) {

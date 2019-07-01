@@ -59,6 +59,7 @@
          * @returns
          */
         fhdStart(ctx, pointer, crtMuser) {
+          console.log('====> Whiteboard start ', ioAdapter.serial);
           const currTime = new Date().getTime();
           const { canvas } = vcan.main;
 
@@ -87,6 +88,7 @@
         // captureDrawingPath: function(evt) {
         // fhRendering: function(evt) {
         fhRendering(pointer, crtMuser) {
+          console.log('====> Whiteboard render ', ioAdapter.serial);
           const currTime = new Date().getTime();
           this.freeDrawingXPoints.push(pointer.x);
           this.freeDrawingYPoints.push(pointer.y);
@@ -105,6 +107,7 @@
          *
          */
         finalizeDrawingPath(mcanvas, crtMuser, pointer) {
+          console.log('====> Whiteboard path ', ioAdapter.serial);
           const currTime = new Date().getTime();
           this.contextTop.closePath();
           this.isCurrentlyDrawing = false;

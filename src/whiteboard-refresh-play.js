@@ -103,11 +103,11 @@
           this.rendering = false; // Now rendering is finished
         }
 
-        if (roles.hasControls()) {
-          if (virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs[virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs.length - 1].uid == virtualclass.wb[virtualclass.gObj.currWb].gObj.displayedObjId) {
-            vcan.main.replayObjs = virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs;
-          }
-        }
+        // if (roles.hasControls()) {
+        //   if (virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs[virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs.length - 1].uid == virtualclass.wb[virtualclass.gObj.currWb].gObj.displayedObjId) {
+        //     vcan.main.replayObjs = virtualclass.wb[virtualclass.gObj.currWb].gObj.tempRepObjs;
+        //   }
+        // }
 
 
         if (typeof this.objs[this.objNo + 1] === 'object') {

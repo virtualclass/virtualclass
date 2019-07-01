@@ -5,6 +5,7 @@
 (function (window) {
   "use strict";
   let that;
+  let mycacheQueue = [];
   let dataStore = false;
   let dataAllStore = false;
   let storeFirstObj = false;
@@ -265,6 +266,43 @@
       ]);
     },
 
+    async getDataFromcacheAll() {
+      let cursor = await this.db.transaction('cacheAll').store.openCursor();
+      while (cursor) {
+        if (cursor.value) {
+
+          if (!Array.isArray(mycacheQueue[cursor.key[0]])) {
+            mycacheQueue[cursor.key[0]] = [];
+          }
+          mycacheQueue[cursor.key[0]][cursor.key[1]] = cursor.value;
+          // if (!Array.isArray(mycacheQueue[cursor.key[0] + cursor.key[1]])) {
+          //   mycacheQueue[cursor.key[0] + cursor.key[1]] = [];
+          // }
+          // mycacheQueue[cursor.key[0] + cursor.key[1]].push(cursor.value);
+          // ioAdapter.serial = cursor.key[1];
+          // const event = { data: { msg: cursor.value, cmd: 'receivedJson' } };
+          // await ioInit.onmessage(event);
+        }
+        cursor = await cursor.continue();
+      }
+      // setTimeout(() => {
+        if (mycacheQueue.length > 0) {
+          for (const key1 in mycacheQueue) {
+            for (const key2 in mycacheQueue[key1]) {
+              ioAdapter.serial = key2;
+              ioInit.onmessage({ data: { msg: mycacheQueue[key1][key2], cmd: 'receivedJson' } });
+            }
+          }
+        }
+
+        virtualclass.config.makeWebSocketReady = true;
+        virtualclass.makeReadySocket();
+      // }, 5000);
+
+
+      // await this[table].handleResult(cursor);
+    },
+
     async getDataFromTable(table) {
       const cursor = await this.db.transaction(table).store.openCursor();
       await this[table].handleResult(cursor);
@@ -312,29 +350,29 @@
 
     dataAdapterAll: {
       async handleResult(cursor) {
-        while (cursor) {
-          if (cursor.value.hasOwnProperty('adaptData')) {
-            const data = JSON.parse(cursor.value.adaptData);
-            if (parseInt(cursor.value.serialKey) > ioAdapter.serial) {
-              ioAdapter.serial = parseInt(cursor.value.serialKey);
-            }
-            // debugger;
-            ioAdapter.adapterMustData[ioAdapter.serial] = data;
-          }
-          cursor = await cursor.continue();
-        }
+
+        // while (cursor) {
+        //   if (cursor.value.hasOwnProperty('adaptData')) {
+        //     const data = JSON.parse(cursor.value.adaptData);
+        //     if (parseInt(cursor.value.serialKey) > ioAdapter.serial) {
+        //       ioAdapter.serial = parseInt(cursor.value.serialKey);
+        //     }
+        //     // debugger;
+        //     ioAdapter.adapterMustData[ioAdapter.serial] = data;
+        //   }
+        //   cursor = await cursor.continue();
+        // }
       },
     },
 
     cacheAll : {
         async handleResult(cursor) {
         if (cursor) {
+
           if (cursor.value) {
-            const msg = {};
-            msg.m = JSON.parse(cursor.value);
-            msg.type = 'broadcastToAll';
-            msg.user = {userid: cursor.key[0]};
-            // io.onRecJson(msg);
+            ioAdapter.serial = cursor.key[1];
+            const event = {data:{msg : cursor.value, cmd : 'receivedJson'}};
+            await ioInit.onmessage(event);
           }
           cursor = await cursor.continue();
           this.handleResult(cursor);

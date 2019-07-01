@@ -28,7 +28,9 @@ var io = {
     this.cfg = cfg;
     'use strict';
     console.log('==== io init ');
-    ioInit.sendToWorker({ cmd: 'init', msg: cfg });
+    if (!this.webSocketConnected()) {
+      ioInit.sendToWorker({ cmd: 'init', msg: cfg });
+    }
   },
 
   send(msg, cfun, touser) {
@@ -81,57 +83,63 @@ var io = {
     // earlier the below information sent by server
     // var userObj = { name : wbUser.name, lname : wbUser.lname, role:wbUser.role, userid : wbUser.id};
     const userObj = { userid: wbUser.id };
+    let jobj;
     switch (obj.cfun) {
       case 'broadcastToAll':
         if (typeof obj.arg.touser === 'undefined') {
-          var sobj = {
-            // type: 'broadcastToAll',
+          const sobj = JSON.stringify({
             user: userObj,
             m: obj.arg.msg,
-          };
-          var jobj = `F-BR-{"0${JSON.stringify(sobj)}`;
+          });
+          if (obj.arg.msg.hasOwnProperty('serial')) {
+            ioStorage.storeCacheAllDataSend(obj, [virtualclass.gObj.uid, obj.arg.msg.serial]);
+          }
+          jobj = `F-BR-{"0${sobj}`;
         } else {
-          var sobj = {
-            // type: 'broadcastToAll',
-            // user: virtualclass.gObj.uid,
+          const sobj = JSON.stringify({
             user: userObj,
             m: obj.arg.msg,
             userto: obj.arg.touser,
-          };
+          });
+
           let { touser } = obj.arg;
           while (touser.length < 12) {
             touser = `0${touser}`;
           }
-          var jobj = `F-BRU-{"${touser}{"0${JSON.stringify(sobj)}`;
+          if (obj.arg.msg.hasOwnProperty('userSerial')) {
+            ioStorage.storeCacheOutData(sobj, [touser, obj.arg.msg.userSerial]);
+          }
+          jobj = `F-BRU-{"${touser}{"0${sobj}`;
         }
         break;
       case 'ping':
-        var sobj = {
+        const sobj = {
           type: 'PONG',
           m: obj.arg.msg,
         };
-        var jobj = `F-PI-${JSON.stringify(sobj)}`;
+        jobj = `F-PI-${JSON.stringify(sobj)}`;
         break;
 
       case 'speed':
-        var jobj = `F-SPE-{"${obj.arg.msg}`;
+        jobj = `F-SPE-{"${obj.arg.msg}`;
         break;
 
       case 'session':
-        var jobj = `F-SS-{"${obj.arg.msg}`;
+        jobj = `F-SS-{"${obj.arg.msg}`;
         break;
 
       case 'recording':
-        var jobj = `F-SR-{"${obj.arg.msg}`;
+        jobj = `F-SR-{"${obj.arg.msg}`;
         break;
 
       default:
-        var jobj = JSON.stringify(obj);
+        jobj = JSON.stringify(obj);
     }
 
     // console.log('Total time ' + timeSec +', String send ' + jobj);
     if (jobj.length <= 600000) { // 600k
       // this.sock.send(jobj);
+
       workerIO.postMessage({ cmd: 'send', msg: jobj });
 
       // this.sock.onerror = function(error) {}
@@ -258,7 +266,11 @@ var io = {
   },
 
   onRecJsonIndividual(receivemsg) {
-    ioStorage.receiveStoreCacheAllData(receivemsg);
+    // if (virtualclass.config.makeWebSocketReady) {
+    //   ioStorage.receiveStoreCacheAllData(receivemsg);
+    // }
+
+
     let userto = '';
     switch (receivemsg.type) {
       case 'joinroom':
@@ -410,7 +422,6 @@ var ioInit = {
     switch (e.data.cmd) {
       case 'connectionopen':
         io.stockReadyState = true;
-        virtualclass.ioEventApi.connectionopen(e.data.msg);
         break;
 
       case 'receivedJson':
@@ -422,11 +433,18 @@ var ioInit = {
 
             msg.type = 'broadcastToAll';
             if (typeof virtualclass.gObj.allUserObj[msg.user.userid] === 'undefined') {
+
               virtualclass.gObj.allUserObj[msg.user.userid] = {};
               virtualclass.gObj.allUserObj[msg.user.userid].userid = msg.user.userid;
-              virtualclass.gObj.allUserObj[msg.user.userid].lname = ' ';
-              virtualclass.gObj.allUserObj[msg.user.userid].name = 'student';
-              virtualclass.gObj.allUserObj[msg.user.userid].role = 's';
+              if (!virtualclass.config.makeWebSocketReady) {
+                virtualclass.gObj.allUserObj[msg.user.userid].lname = wbUser.lname;
+                virtualclass.gObj.allUserObj[msg.user.userid].name = wbUser.name;
+                virtualclass.gObj.allUserObj[msg.user.userid].role = wbUser.role;
+              } else {
+                virtualclass.gObj.allUserObj[msg.user.userid].lname = ' ';
+                virtualclass.gObj.allUserObj[msg.user.userid].name = 'student';
+                virtualclass.gObj.allUserObj[msg.user.userid].role = 's';
+              }
             }
 
             if (virtualclass.gObj.allUserObj[msg.user.userid].userid == msg.user.userid) {
@@ -439,6 +457,10 @@ var ioInit = {
 
           if (msg.hasOwnProperty('m')) {
             if (msg.m.hasOwnProperty('serial')) {
+              if (virtualclass.config.makeWebSocketReady) {
+                ioStorage.storeCacheAllData(msg, [msg.user.userid, msg.m.serial]);
+              }
+              virtualclass.ioEventApi.connectionopen(e.data.msg);
               await ioMissingPackets.checkMissing(msg);
             } else if (msg.m.hasOwnProperty('reqMissPac')) {
               // there is bing upload the content then we will not send miss packet
@@ -449,6 +471,9 @@ var ioInit = {
               console.log('Execute missed packets');
               ioMissingPackets.fillExecutedStore(msg);
             } else if (msg.m.hasOwnProperty('userSerial')) {
+              // if (virtualclass.config.makeWebSocketReady) {
+              //   ioStorage.receiveStoreCacheAllData(e.data);
+              // }
               ioMissingPackets.userCheckMissing(msg);
             } else if (msg.m.hasOwnProperty('userReqMissPac')) {
               // there is bing upload the content then we will not send miss packet
@@ -465,7 +490,7 @@ var ioInit = {
             }
           } else {
             // return; // for temporary
-            io.onRecJson(msg);
+             io.onRecJson(msg);
             //  workerIO.postMessage({cmd : "saveJson", msg : {msg:msg, cj : cleanJson}});
           }
         }

@@ -61,7 +61,14 @@
       ev.preventDefault();
     };
 
-    tool._mousedown = function (ev, cobj) {
+    tool._mousedown = function (ev, cobj)
+    {
+      if (virtualclass.sumanMouseDown) {
+        debugger;
+      }
+      virtualclass.sumanMouseDown = true;
+      console.log('====> Whiteboard mousedown ', ioAdapter.serial);
+
       // console.log('Whiteboard draw down');
       // ev.currX =  ev.currX / virtualclass.zoom.canvasScale;
       // ev.currY =  ev.currY / virtualclass.zoom.canvasScale;
@@ -150,6 +157,7 @@
        */
     tool._mousemove = function (ev, mouseup) {
       // console.log('Whiteboard draw move');
+      console.log('====> Whiteboard move ', ioAdapter.serial);
       // ev.currX = ev.currX / virtualclass.zoom.canvasScale;
       // ev.currY = ev.currY / virtualclass.zoom.canvasScale;
 
@@ -275,7 +283,8 @@
        *  with last made object very specail
        */
     tool._mouseup = function (ev, cobj) {
-      // console.log('Whiteboard draw up');
+      virtualclass.sumanMouseDown = false;
+      console.log('====> Whiteboard mousup ', ioAdapter.serial);
       if (ev.detail.hasOwnProperty('cevent')) {
         ev.clientX = ev.detail.cevent.x + (wb.vcan.main.offset.x);
         ev.clientY = ev.detail.cevent.y + (wb.vcan.main.offset.y);

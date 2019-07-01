@@ -62,7 +62,7 @@ var ioAdapter = {
     this.adapterMustData[this.serial] = { type: 'broadcast', m: msg };
     this.send(msg);
     ioStorage.dataAdapterStore({ type: 'broadcast', user: wbUser.id, m: msg }, this.serial);
-    ioStorage.storeCacheAllData(msg, [virtualclass.gObj.uid, this.serial]);
+    //ioStorage.storeCacheAllData(msg, [virtualclass.gObj.uid, this.serial]);
   },
 
   send(msg) {
@@ -104,7 +104,7 @@ var ioAdapter = {
       user: wbUser.id,
       m: msg,
     }, `${touser}_${msg.userSerial}`);
-    ioStorage.storeCacheOutData(msg, [touser, this.userSerial[touser]]);
+    // ioStorage.storeCacheOutData(msg, [touser, this.userSerial[touser]]);
   },
 
   sendUser(msg, touser) {
