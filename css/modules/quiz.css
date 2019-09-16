@@ -4,6 +4,7 @@
 /* congrea quiz */
 #virtualclassQuiz {
   margin-right: 6px;
+  position: relative;
 }
 
 #virtualclassCont.congrea .bootstrap .quizNavBar {
@@ -359,7 +360,7 @@ span.sch {
   font-size: 14px;
 }
 
-#virtualclassCont.congrea.student #layoutQuizBody #stdQuizMszLayout {
+/* #virtualclassCont.congrea.student #layoutQuizBody #stdQuizMszLayout {
   background-color: #f9f9f9;
   border: 1px solid #c8ddb8;
   border-radius: 5px;
@@ -374,7 +375,7 @@ span.sch {
   left: 0;
   right: 320px;
   font-size: medium;
-}
+} */
 
 #virtualclassQuiz #layoutQuiz .nav.navbar, #virtualclassPoll #layoutPoll .nav.navbar {
   max-height: 48px;
