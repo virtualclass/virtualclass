@@ -199,6 +199,7 @@
     if (!Object.prototype.hasOwnProperty.call(virtualclass.gObj, 'audIntDisable') && !Object.prototype.hasOwnProperty.call(virtualclass.gObj, 'vidIntDisable')) {
       await virtualclass.media.init();
     }
+    virtualclass.stickybarWidth();
   };
 
   Bootstrap.prototype.readyToGo = async function () {
